@@ -7,35 +7,42 @@ url = 'https://github.com/Dormamos64/excell/raw/refs/heads/main/df_diarios.xlsx'
 # Ler o arquivo Excel diretamente da URL
 df = pd.read_excel(url, engine='openpyxl')
 
+# TIPO DE VARIÁVEL DE COLUNAS PERTINENTES 
+# QUALITATIVA NOMINAL: 
+# classe -> nomeia as funções
+# caderno -> infraestrutura e edificio 
+# grupo -> organiza as funções em grupos        
+# codigo_cc -> identificador
+# descricao -> tarefas
+# codin -> identificador 
+# unidin -> unidade de medida   
+# tipo_insumo -> cclassifica entre mão de obra e equipamento
+# id_ccoi_elemento -> identificador
+# id_appropriation_composition -> identificador
+
+
+# QUALITATIVA ORDINAL:
+# unid -> unidad de medida
+# insumo -> reccursos utilizados
+
+# QUANTITATIVA DISCRETA:
+# elemen -> identificador
+
+# QUANTITATIVA CONTÍNUA:
+# app_inicio -> data/hora de início
+# app_fim -> data/hora de término
+# qntd -> quantidade
+# qs -> quantidade 
+# data -> data/hora 
+# qntd_ac -> quantiade de insumo
+# qs_acu -> 
+# ip_d -> 
+# ip_acu ->
+  
+
 # Exibir as primeiras linhas do DataFrame
-df.head()
-
-print(df.head)
-
-'''qualitativa nominal = coisas q n da para colocar em ordem, ierarquia ex. genero, cidade, cor.
--grupo
--descrição
--insumo
--nome_obra
--id_ccoi_elemento
--id_appropriation_compostition
--ip_d
--ip_acum
-
-
-qualitativa ordinal = é oq da para ordenar sem ser numero ex. patentes , classificação.
--codigo_cc 
--unid
+print(df.head())
 
 
 
-quantitativa discreta = quando c consegue contar sendo valores inteiros e finitos ex. numeros 1,2,3...
--elemento
-
-
-quantitativa contínua = quando n da para contar ex. peso exato altura exata etc tempo, temperatura ....
--app_inicio
--app_fim
--qntd
-'''
 
