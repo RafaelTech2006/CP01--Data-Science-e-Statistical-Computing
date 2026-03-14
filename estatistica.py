@@ -1,7 +1,15 @@
 import pandas as pd
 import streamlit as st
+import numpy as np
+from scipy.stats import gaussian_kde
 
 #IMPORTAÇÃO E RECONHECIMENTO DA BASE
+@st.cache_data
+def carregar_dados():
+    url = 'https://github.com/Dormamos64/excell/raw/refs/heads/main/df_diarios.xlsx'
+    return pd.read_excel(url, engine='openpyxl')
+
+df = carregar_dados()
 
 url = 'https://github.com/Dormamos64/excell/raw/refs/heads/main/df_diarios.xlsx'
 df = pd.read_excel(url, engine='openpyxl')
@@ -45,7 +53,35 @@ print(mao_de_obra.head())
 st.warning("O filtro da 'MÃO DE OBRA' torna a comparação de produtividade mais coerente pois evita o encontro entre dois insumos diferentes, priorizando a ação do trabalhador, assim, possibilitando a análise de sua produtividade com mais eficiência.")
 
 #LEITURA EXPLORATÓRIA E FORMULAÇÃO DE PERGUNTAS
+# Qual o mais e menos produtivo 
 # Qual a diferença entre o mais e o menos produtivo?
 # Qual a moda do menos produtivo?
 # qual a distancia interquartil dos acidentes de trabalho?  
 # qual o seu limite superior e inferior financeiro para a obra?
+
+
+
+#Remover valores NaN ou infinitos na coluna 'ip_d'
+df_mao_de_obra = mao_de_obra[np.isfinite(mao_de_obra['ip_d'])]
+
+#Calcular Média e Mediana
+media_ip = df_mao_de_obra['ip_d'].mean()
+mediana_ip = df_mao_de_obra['ip_d'].median()
+
+#Calcular a Moda Contínua utilizando KDE 
+kde = gaussian_kde(df_mao_de_obra['ip_d'], bw_method='scott')
+x_values = np.linspace(df_mao_de_obra['ip_d'].min(), df_mao_de_obra['ip_d'].max(), 1000)
+kde_values = kde(x_values)
+moda_ip_continua = x_values[np.argmax(kde_values)]
+
+# Exibindo os resultados de forma organizada
+st.subheader("📊 Estatísticas de Produtividade (IP)")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Média", f"{media_ip:.4f}")
+col2.metric("Mediana", f"{mediana_ip:.4f}")
+col3.metric("Moda (KDE)", f"{moda_ip_continua:.4f}")
+
+# Print tabela filtrada 
+st.write("Amostra dos dados de Mão de Obra:", df_mao_de_obra.head())
