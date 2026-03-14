@@ -35,18 +35,18 @@ df = pd.read_excel(url, engine='openpyxl')
 # insumo -> tipo de insumo. Cita a mão de obra e equipamento presentes na obra
 
 # QUANTITATIVA DISCRETA:
-# elemen -> identificador da obra
+# elemen -> identificador da obra. 
 
 # QUANTITATIVA CONTÍNUA:
 # app_inicio ->período de registro. Informa o dia, mês, ano e horário de início do registro.
 # app_fim -> período de registro. Informa o dia, mês, ano e horário do fim do registro.
 # qntd -> quantidade produzida.
 # qs -> quantidade produzida.
-# data -> período de registro
-# qntd_ac -> quantiade de insumo
-# qs_acum -> indicadores de produtividade
-# ip_d -> indicador de produtividade
-# ip_acum -> indicador de produtividade
+# data -> período de registro. Informa o dia, mês, ano e horário de início do registro.
+# qntd_acum -> quantiade acumlada
+# qs_acum -> quantidade acumulada
+# ip_d -> identificação da obra
+# ip_acum -> identificação da obra
 
 #FILTRAGEM DADOS
 mao_de_obra = df[df['tipo_insumo'] == 'MAO DE OBRA'] 
@@ -54,11 +54,12 @@ print(mao_de_obra.head())
 st.warning("O filtro da 'MÃO DE OBRA' torna a comparação de produtividade mais coerente pois evita o encontro entre dois insumos diferentes, priorizando a ação do trabalhador, assim, possibilitando a análise de sua produtividade com mais eficiência.")
 
 #LEITURA EXPLORATÓRIA E FORMULAÇÃO DE PERGUNTAS
-# Qual o mais e menos produtivo 
-# Qual a diferença entre o mais e o menos produtivo?
-# Qual a moda do menos produtivo?
-# qual a distancia interquartil dos acidentes de trabalho?  
-# qual o seu limite superior e inferior financeiro para a obra?
+# Qual obra possui a maior média?
+# Qual a moda do menos e do mais produtivo?
+# onde começa o primeiro quartil?
+# Qual a amplitude da obra?
+# Ha valores qeu superam ou são inferiores ao limite superior/inferior?  
+# Qual o seu limite superior e inferior financeiro para a obra?
 
 
 
