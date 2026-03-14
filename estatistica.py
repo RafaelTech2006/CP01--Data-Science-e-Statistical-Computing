@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 from scipy.stats import gaussian_kde
+import matplotlib.pyplot as pl
 
 #IMPORTAÇÃO E RECONHECIMENTO DA BASE
 @st.cache_data
@@ -74,8 +75,26 @@ x_values = np.linspace(df_mao_de_obra['ip_d'].min(), df_mao_de_obra['ip_d'].max(
 kde_values = kde(x_values)
 moda_ip_continua = x_values[np.argmax(kde_values)]
 
-# Exibindo os resultados de forma organizada
-st.subheader("📊 Estatísticas de Produtividade (IP)")
+#Mesma coisa mas agora para 'qntd'
+
+df_mao_de_obra = mao_de_obra[np.isfinite(mao_de_obra['ip_d'])]
+
+#Calcular Média e Mediana
+media_qntd = df_mao_de_obra['qntd'].mean()
+mediana_qntd = df_mao_de_obra['qntd'].median()
+
+#Calcular a Moda Contínua utilizando KDE 
+kde = gaussian_kde(df_mao_de_obra['qntd'], bw_method='scott')
+x_values = np.linspace(df_mao_de_obra['qntd'].min(), df_mao_de_obra['qntd'].max(), 1000)
+kde_values = kde(x_values)
+moda_qntd_continua = x_values[np.argmax(kde_values)]
+
+
+# Print tabela filtrada 
+st.write("Dados de Mão de Obra:", df_mao_de_obra.head())
+
+# Exibindo os resultados de forma organizada "ip"
+st.subheader("Estatísticas de Produtividade (IP)")
 
 col1, col2, col3 = st.columns(3)
 
@@ -83,5 +102,35 @@ col1.metric("Média", f"{media_ip:.4f}")
 col2.metric("Mediana", f"{mediana_ip:.4f}")
 col3.metric("Moda (KDE)", f"{moda_ip_continua:.4f}")
 
-# Print tabela filtrada 
-st.write("Amostra dos dados de Mão de Obra:", df_mao_de_obra.head())
+# Exibindo os resultados de forma organizada "qntd"
+st.subheader("Estatísticas de Volume (Quantidade)")
+c4, c5, c6 = st.columns(3)
+c4.metric("Média Qntd", f"{media_qntd:.2f}")
+c5.metric("Mediana Qntd", f"{mediana_qntd:.2f}")
+c6.metric("Moda Qntd (KDE)", f"{moda_qntd_continua:.2f}")
+
+#medidas de dispersão
+
+# Lista das variáveis que realmente importam para dispersão
+variaveis_importantes = ['ip_d', 'qntd']
+
+for var in variaveis_importantes:
+    # Limpeza rápida para a variável atual
+    dados_limpos = df_mao_de_obra[np.isfinite(df_mao_de_obra[var])].copy()
+    
+    # Cálculos
+    media = dados_limpos[var].mean()
+    desvio = dados_limpos[var].std()
+    cv = (desvio / media) * 100 if media != 0 else 0
+    amplitude = dados_limpos[var].max() - dados_limpos[var].min()
+    variancia = dados_limpos[var].var()
+    
+    # Título da seção no Streamlit
+    st.subheader(f"Análise de: {var.upper()}")
+    
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Amplitude", f"{amplitude:.3f}")
+    c2.metric("Desvio-Padrão", f"{desvio:.3f}")
+    c3.metric("Variância", f"{variancia:.3f}")
+    c4.metric("Coef. Variação", f"{cv:.2f}%")
+    
