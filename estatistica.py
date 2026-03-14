@@ -1,10 +1,10 @@
 import pandas as pd
+import streamlit as st
 
 #IMPORTAÇÃO E RECONHECIMENTO DA BASE
 
 url = 'https://github.com/Dormamos64/excell/raw/refs/heads/main/df_diarios.xlsx'
 df = pd.read_excel(url, engine='openpyxl')
-print(df.head())
 
 #TIPO DE VARIÁVEL / EXPLICAÇÃO DE CADA COLUNA 
 
@@ -38,3 +38,14 @@ print(df.head())
 # qs_acum -> indicadores de produtividade
 # ip_d -> indicador de produtividade
 # ip_acum -> indicador de produtividade
+
+#FILTRAGEM DADOS
+mao_de_obra = df[df['tipo_insumo'] == 'MAO DE OBRA'] 
+print(mao_de_obra.head())
+st.warning("O filtro da 'MÃO DE OBRA' torna a comparação de produtividade mais coerente pois evita o encontro entre dois insumos diferentes, priorizando a ação do trabalhador, assim, possibilitando a análise de sua produtividade com mais eficiência.")
+
+#LEITURA EXPLORATÓRIA E FORMULAÇÃO DE PERGUNTAS
+# Qual a diferença entre o mais e o menos produtivo?
+# Qual a moda do menos produtivo?
+# qual a distancia interquartil dos acidentes de trabalho?  
+# qual o seu limite superior e inferior financeiro para a obra?
