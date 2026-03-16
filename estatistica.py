@@ -7,7 +7,7 @@ from scipy.stats import gaussian_kde
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Dashboard de Produtividade - Mão de Obra", layout="wide")
 
-# CSS para garantir visibilidade e estilo das caixas (Dark/Light Mode)
+# CSS para garantir visibilidade e estilo das caixas
 st.markdown("""
     <style>
     div[data-testid="stMetric"] {
@@ -21,6 +21,13 @@ st.markdown("""
         border-radius: 10px;
         border-left: 5px solid #00CC96;
         background-color: rgba(0, 204, 150, 0.1);
+        margin: 10px 0px 20px 0px;
+    }
+    .relatorio-box {
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #636EFA;
+        background-color: rgba(99, 110, 250, 0.1);
         margin: 10px 0px 20px 0px;
     }
     </style>
@@ -38,7 +45,7 @@ def carregar_dados():
 
 df = carregar_dados()
 
-# --- SIDEBAR (FILTROS E AS 6 PERGUNTAS) ---
+# --- SIDEBAR (FILTROS E CONSULTAS) ---
 st.sidebar.header("⚙️ Painel de Controle")
 obras_selecionadas = st.sidebar.multiselect("Selecione as Obras:", 
                                             options=df['codigo_cc'].unique(),
@@ -61,10 +68,23 @@ pergunta_selecionada = st.sidebar.selectbox(
     ]
 )
 
+st.sidebar.divider()
+st.sidebar.header("📋 Relatórios de Gestão")
+pergunta_gestao = st.sidebar.selectbox(
+    "Análise Orientada:",
+    [
+        "Selecione uma análise...",
+        "A. Há diferença de produtividade entre as obras?",
+        "B. Há diferença entre serviços ou descrições?",
+        "C. Como está a relação entre média e mediana?",
+        "D. Quais grupos são mais ou menos previsíveis?"
+    ]
+)
+
 # --- TÍTULO ---
 st.title("📊 Análise de Produtividade: Mão de Obra")
 
-# --- LAYOUT: MÉTRICAS PRINCIPAIS (HORIZONTAL) ---
+# --- LAYOUT: MÉTRICAS PRINCIPAIS ---
 st.subheader("📌 Indicadores Principais")
 c1, c2, c3, c4, c5 = st.columns(5)
 
@@ -79,7 +99,7 @@ c5.metric("Amplitude", f"{(df_view['ip_d'].max() - df_view['ip_d'].min()):.4f}")
 
 st.divider()
 
-# --- ÁREA DE RESPOSTAS DINÂMICAS ---
+# --- ÁREA DE RESPOSTAS DINÂMICAS (CONSULTAS) ---
 if pergunta_selecionada != "Selecione uma pergunta...":
     st.subheader("💡 Resposta Analítica")
     st.markdown('<div class="resposta-box">', unsafe_allow_html=True)
@@ -114,6 +134,40 @@ if pergunta_selecionada != "Selecione uma pergunta...":
         
     st.markdown('</div>', unsafe_allow_html=True)
 
+# --- ÁREA DE RELATÓRIOS DE GESTÃO (NOVA PARTE) ---
+if pergunta_gestao != "Selecione uma análise...":
+    st.subheader("📝 Relatório de Diretoria")
+    st.markdown('<div class="relatorio-box">', unsafe_allow_html=True)
+    
+    if "A." in pergunta_gestao:
+        stats_obras = df_view.groupby('codigo_cc')['ip_d'].agg(['mean', 'std']).sort_values(by='mean')
+        obra_mais = stats_obras.index[-1]
+        obra_menos = stats_obras.index[0]
+        st.write(f"**Análise de Obras:** Sim, há diferenças significativas. A obra **{obra_mais}** é a mais produtiva, enquanto a **{obra_menos}** apresenta o menor desempenho médio.")
+        st.write("• *Insight:* Avalie se a diferença se deve à complexidade da frente de serviço ou à qualificação da equipe local.")
+
+    elif "B." in pergunta_gestao:
+        stats_desc = df_view.groupby('descricao')['ip_d'].mean().sort_values()
+        st.write(f"**Análise por Serviço:** O grupo **'{stats_desc.index[-1]}'** lidera a produtividade.")
+        st.write(f"O grupo **'{stats_desc.index[0]}'** apresenta a maior necessidade de intervenção técnica.")
+        st.write("• *Fatores:* Heterogeneidade alta indica processos não padronizados ou falta de ferramentas adequadas.")
+
+    elif "C." in pergunta_gestao:
+        mediana = df_view['ip_d'].median()
+        diff = abs(m_ip - mediana)
+        status = "afastadas (presença de outliers)" if diff > (m_ip * 0.1) else "próximas (distribuição equilibrada)"
+        st.write(f"**Média vs Mediana:** A média é **{m_ip:.4f}** e a mediana é **{mediana:.4f}**.")
+        st.write(f"As medidas estão **{status}**. Valores extremos estão impactando o cálculo da média.")
+
+    elif "D." in pergunta_gestao:
+        cv_obras = (df_view.groupby('codigo_cc')['ip_d'].std() / df_view.groupby('codigo_cc')['ip_d'].mean()) * 100
+        mais_estavel = cv_obras.idxmin()
+        menos_estavel = cv_obras.idxmax()
+        st.write(f"**Previsibilidade:** A obra **{mais_estavel}** é a mais estável (maior previsibilidade).")
+        st.write(f"A obra **{menos_estavel}** apresenta maior variabilidade, sendo um risco maior para o cronograma.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
 # --- LAYOUT: GRÁFICOS ---
 theme = "plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white"
 
@@ -137,7 +191,6 @@ st.divider()
 
 # --- SEÇÃO MINIMIZADA (EXPANDERS) ---
 with st.expander("📋 Ver Dados Filtrados (Base de Dados Amostral)"):
-    st.write("Abaixo estão os dados brutos filtrados por Obra e Mão de Obra:")
     st.dataframe(df_view, use_container_width=True)
 
 with st.expander("🏷️ Classificação de Variáveis (Dicionário do Projeto)"):
@@ -148,3 +201,4 @@ with st.expander("🏷️ Classificação de Variáveis (Dicionário do Projeto)
     with c_class2:
         st.write("**Quantitativa Contínua:** `ip_d`, `qntd`, `data`, `app_inicio`, `app_fim`.")
         st.write("**Quantitativa Discreta:** `elemen`.")
+ 
